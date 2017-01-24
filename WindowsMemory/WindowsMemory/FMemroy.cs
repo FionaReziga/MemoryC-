@@ -18,6 +18,18 @@ namespace WindowsMemory
                                 // d'images dans le réservoir)
         int nbCartesSurTapis;   // Nombre de cartes sur le tapis
 
+        int[] tImagesCartes;    // On veut une série de nbCartesSurTapis cartes parmi celles 
+                                // du réservoir
+        int score;
+
+        int nb_cartes;
+
+        bool carte_retournees;
+
+        PictureBox Image_1, Image_2;
+
+        Timer tmr = new Timer();
+
         public FMemory()
         {
             InitializeComponent();
@@ -48,6 +60,11 @@ namespace WindowsMemory
 
             // On effectue la distribution (aléatoire) proprement dite
             Distribution_Aleatoire();
+
+            // On active les boutons retourner   les cartes et jouer
+            btn_Jouer.Enabled = true;
+
+            carte_retournees = true;
         }
 
 
@@ -76,24 +93,34 @@ namespace WindowsMemory
             LotoMachine hasard = new LotoMachine(nbCartesDansSabot);
             // On veut une série de nbCartesSurTapis cartes parmi celles 
             // du réservoir
-            int[] tImagesCartes = hasard.TirageAleatoire(nbCartesSurTapis, false);
+            tImagesCartes = hasard.TirageAleatoire(nbCartesSurTapis, false);
             // La série d'entiers retournée par la LotoMachine correspondra
             // aux indices des cartes dans le "sabot"
 
             // Affectation des images aux picturebox
-            PictureBox carte;
+            PictureBox carte, carte2 ;
             int i_image;
-            for (int i_carte = 0; i_carte < nbCartesSurTapis; i_carte++)
+            int nb_carteTapis = nbCartesSurTapis;
+
+            for (int i_carte = 0; i_carte != nb_carteTapis ; i_carte++)
             {
+      
                 carte = (PictureBox)tlpTapisDeCartes.Controls[i_carte];
+                carte2 = (PictureBox)tlpTapisDeCartes.Controls[nb_carteTapis-1];
+
                 i_image = tImagesCartes[i_carte + 1]; // i_carte + 1 à cause
                                                       // des pbs d'indices
                 carte.Image = ilSabotDeCartes.Images[i_image];
+                carte2.Image = ilSabotDeCartes.Images[i_image];
+
+                nb_carteTapis--;
             }
         }
 
-        /*private void pb_XX_Click(object sender, EventArgs e)
+        private void pb_XX_Click(object sender, EventArgs e)
         {
+            nb_cartes++;
+
             PictureBox carte;
             int i_carte, i_image;
             //if (Image_1 == null)
@@ -101,13 +128,27 @@ namespace WindowsMemory
             //if (Image_2 == null)
             //    MessageBox.Show("L'image 2 n'est pas référencée");
 
-            if (nb_cartes < 2)
-            {
+            /*if (nb_cartes < 2)
+            {*/
                 carte = (PictureBox)sender;
                 i_carte = Convert.ToInt32(carte.Tag);
-                i_image = tapisCARTES[i_carte];
-                carte.Image = imgListe.Images[i_image];
-                if (i_image == i_hasard)
+                i_image = tImagesCartes[i_carte];
+
+                RetournerLaCarte(carte, i_carte, i_image);
+            /*
+                if (nb_cartes == 0)
+                {
+                    Image_1 = carte;
+                }
+                else if (nb_cartes == 1)
+                {
+                    Image_2 = carte;
+                }
+                RetournerLaCarte(carte);
+            }
+            else if(nb_cartes == 2)
+            {
+                /*if (Image_1.Image == Image_2.Image)//if (i_image == i_hasard)
                 {
                     MessageBox.Show("Bravo !");
                 }
@@ -115,36 +156,56 @@ namespace WindowsMemory
                 {
                     MessageBox.Show("DOMMAGE !");
                 }
-                if (nb_cartes == 0)
-                {
-                    Image_1 = carte;
-                }
-                if (nb_cartes == 1)
-                {
-                    Image_2 = carte;
-                }
-                nb_cartes++;
-
             }
             else
             {
                 MessageBox.Show("Deux cartes sont déjà retournées !");
-                RetournerLesCartes();
+                RetournerLesCartes(sender, e);
                 nbCartesSurTapis = 0;
                 Image_1 = null;
                 Image_2 = null;
-            }
+            }*/
 
-        }*/
+        }
 
-        /*private void RetournerLesCartes()
+        private void RetournerLaCarte(PictureBox carte, int i_carte, int i_image)
         {
-            PictureBox carte;
-            int i_carte, i_image;
-            carte = (PictureBox)sender;
-            i_carte = Convert.ToInt32(carte.Tag);
-            i_image = tapisCARTES[i_carte];
-        }*/
+            carte.Image = ilSabotDeCartes.Images[i_image];
+        }
+
+        private void RetournerLesCartes(object sender, EventArgs e)
+        {
+            if (carte_retournees)
+            {
+                PictureBox carte;
+                int i_image;
+
+                for (int i_carte = 0; i_carte < nbCartesSurTapis; i_carte++)
+                {
+                    carte = (PictureBox)tlpTapisDeCartes.Controls[i_carte];
+                    i_image = tImagesCartes[i_carte]; // i_carte + 1 à cause
+                                                // des pbs d'indices
+                    carte.Image = ilSabotDeCartes.Images[i_image];
+                }
+            }
+        }
+
+        private void Jouer(object sender, EventArgs e)
+        {
+            score = 0;
+            nb_cartes = 0;
+            RetournerLesCartes(sender, e);
+            btn_Distribuer.Enabled = false;
+            btn_Abandonner.Enabled = true;
+            btn_Retourner.Enabled = true;
+        }
+
+        private void Abandonner(object sender, EventArgs e)
+        {
+            btn_Distribuer.Enabled = true;
+            btn_Abandonner.Enabled = false;
+            btn_Retourner.Enabled = false;
+        }
 
     }
 
